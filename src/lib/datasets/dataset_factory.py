@@ -20,7 +20,7 @@ from .dataset.uadetrac1on10_b import UADETRAC1ON10_b
 from .dataset.uav import UAV
 from .dataset.cityscapes import CITYSCAPES
 from .dataset.IDD import IDD
-
+from .dataset.copilot import COPILOT
 
 dataset_factory = {
   'coco': COCO,
@@ -35,7 +35,7 @@ dataset_factory = {
   'uav': UAV,
   'cityscapes': CITYSCAPES,
   'IDD': IDD,
-
+  'copilot': COPILOT
 }
 
 _sample_factory = {

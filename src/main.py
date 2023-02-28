@@ -8,12 +8,12 @@ import os
 
 import torch
 import torch.utils.data
-from opts import opts
-from models.model import create_model, load_model, save_model
-from models.data_parallel import DataParallel
-from logger import Logger
-from datasets.dataset_factory import get_dataset
-from trains.train_factory import train_factory
+from lib.opts import opts
+from lib.models.model import create_model, load_model, save_model
+from lib.models.data_parallel import DataParallel
+from lib.logger import Logger
+from lib.datasets.dataset_factory import get_dataset
+from lib.trains.train_factory import train_factory
 
 
 def main(opt):
@@ -30,6 +30,7 @@ def main(opt):
   
   print('Creating model...')
   model = create_model(opt.arch, opt.heads, opt.head_conv)
+  print('Model created...')
   optimizer = torch.optim.Adam(model.parameters(), opt.lr)
   start_epoch = 0
   if opt.load_model != '':
@@ -37,10 +38,12 @@ def main(opt):
       model, opt.load_model, optimizer, opt.resume, opt.lr, opt.lr_step)
 
   Trainer = train_factory[opt.task]
+  print('Trainer...')
   trainer = Trainer(opt, model, optimizer)
+  print('Setting device...')
   trainer.set_device(opt.gpus, opt.chunk_sizes, opt.device)
 
-  print('Setting up data...')
+  print('Setting up val data...')
   val_loader = torch.utils.data.DataLoader(
       Dataset(opt, 'val'), 
       batch_size=1, 
@@ -58,6 +61,7 @@ def main(opt):
         val_loader.dataset.run_eval(preds, opt.save_dir)
     return
 
+  print('Setting up train data...')
   train_loader = torch.utils.data.DataLoader(
       Dataset(opt, 'train'), 
       batch_size=opt.batch_size, 
