@@ -23,13 +23,14 @@ import json
 import cv2
 import numpy as np
 import torch.utils.data as data
+from pycocotools.cocoeval import COCOeval
 import os
 import pycocotools.coco as coco
 
 class COPILOT(data.Dataset):
     num_classes = 2
     OUTPUT_PATH = './src/lib/datasets/dataset'
-    default_resolution=[4056,3040]
+    default_resolution=[1024,1024]
     mean = np.array([0.40789654, 0.44719302, 0.47026115],
                    dtype=np.float32).reshape(1, 1, 3)
     std  = np.array([0.28863828, 0.27408164, 0.27809835],
@@ -64,6 +65,27 @@ class COPILOT(data.Dataset):
         
         return final_pts
 
+    def run_eval(self, results, save_dir):
+        # result_json = os.path.join(save_dir, "results.json")
+        # detections  = self.convert_eval_format(results)
+        # json.dump(detections, open(result_json, "w"))
+        self.save_results(results, save_dir)
+        coco_dets = self.coco.loadRes('{}/results.json'.format(save_dir))
+        coco_eval = COCOeval(self.coco, coco_dets, "bbox")
+        # coco_eval.params.catIds = [2, 3, 4, 6, 7, 8, 10, 11, 12, 13]
+        coco_eval.evaluate()
+        coco_eval.accumulate()
+        coco_eval.summarize()
+    
+
+    def save_results(self, results, save_dir):
+        print('-------------------------')
+        print(self.convert_eval_format(results))
+        print('-------------------------')
+
+        json.dump(self.convert_eval_format(results), 
+            open('{}/results.json'.format(save_dir), 'w'))
+
     def _bbox_to_coco_bbox(bbox):
         return [(bbox[0][0]), (bbox[0][1]),
                 (bbox[1][0] - bbox[0][0]), (bbox[2][1] - bbox[0][1])]
@@ -84,6 +106,33 @@ class COPILOT(data.Dataset):
             return box.tolist()
         else:
             return []
+
+    def _to_float(self, x):
+        return float("{:.2f}".format(x))
+    
+    def convert_eval_format(self, all_bboxes):
+        # import pdb; pdb.set_trace()
+        detections = []
+        for image_id in all_bboxes:
+            for cls_ind in all_bboxes[image_id]:
+                category_id = self._valid_ids[cls_ind - 1]
+                for bbox in all_bboxes[image_id][cls_ind]:
+                    bbox[2] -= bbox[0]
+                    bbox[3] -= bbox[1]
+                    score = bbox[4]
+                    bbox_out  = list(map(self._to_float, bbox[0:4]))
+
+                    detection = {
+                        "image_id": image_id,
+                        "category_id": int(category_id),
+                        "bbox": bbox_out,
+                        "score": float("{:.2f}".format(score))
+                    }
+                    if len(bbox) > 5:
+                        extreme_points = list(map(self._to_float, bbox[5:13]))
+                        detection["extreme_points"] = extreme_points
+                    detections.append(detection)
+        return detections
     
     def __len__(self):
         return self.num_samples
@@ -91,7 +140,7 @@ class COPILOT(data.Dataset):
     def __init__(self, opt, split):
         super(COPILOT, self).__init__()
 
-        self.data_dir = '/store/datasets/coco' if os.path.exists('/store/datasets/coco') else '/home/nesi/Desktop/CenterPoly/src/lib/datasets/copilot'
+        self.data_dir = '/store/datasets/coco' if os.path.exists('/store/datasets/coco') else '/home/cvar_user/Desktop/CenterPoly/src/lib/datasets/copilot'
         print(self.data_dir)
         self.img_dir = os.path.join(self.data_dir, 'images',  '{}2017'.format(split))
         if split == 'test':

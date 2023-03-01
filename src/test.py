@@ -12,7 +12,7 @@ import time
 from progress.bar import Bar
 import torch
 
-from external.nms import soft_nms
+
 from opts import opts
 from logger import Logger
 from utils.utils import AverageMeter
@@ -48,6 +48,7 @@ def prefetch_test(opt):
   os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
 
   Dataset = dataset_factory[opt.dataset]
+  print(opt.task)
   opt = opts().update_dataset_info_and_set_heads(opt, Dataset)
   # print(opt)
   Logger(opt)
@@ -69,18 +70,27 @@ def prefetch_test(opt):
   bar = Bar('{}'.format(opt.exp_id), max=num_iters)
   time_stats = ['tot', 'load', 'pre', 'net', 'dec', 'post', 'merge']
   avg_time_stats = {t: AverageMeter() for t in time_stats}
+  for id,d in data_loader:
+    print(id)
   for ind, (img_id, pre_processed_images) in enumerate(data_loader):
     ret = detector.run(pre_processed_images)
-    results[img_id.numpy().astype(np.int32)[0]] = ret['results']
+    print('img_id', img_id)
+    # print(results)
+    results[img_id[0]] = ret['results']
     Bar.suffix = '[{0}/{1}]|Tot: {total:} |ETA: {eta:} '.format(
                    ind, num_iters, total=bar.elapsed_td, eta=bar.eta_td)
     for t in avg_time_stats:
       avg_time_stats[t].update(ret[t])
       Bar.suffix = Bar.suffix + '|{} {tm.val:.3f}s ({tm.avg:.3f}s) '.format(
         t, tm = avg_time_stats[t])
-    bar.next()
+    # bar.next()
   bar.finish()
+  for result in results:
+    print(result)
   dataset.run_eval(results, opt.save_dir)
+  print('num_iters', num_iters)
+  print('data_loader', data_loader)
+
 
 def test(opt):
   os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
@@ -120,6 +130,7 @@ def test(opt):
     bar.next()
   bar.finish()
   dataset.run_eval(results, opt.save_dir)
+  print('test')
 
 if __name__ == '__main__':
   opt = opts().parse()
