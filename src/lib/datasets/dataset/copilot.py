@@ -30,7 +30,8 @@ import pycocotools.coco as coco
 class COPILOT(data.Dataset):
     num_classes = 2
     OUTPUT_PATH = './src/lib/datasets/dataset'
-    default_resolution=[1024,1024]
+    default_resolution = [512, 512]
+
     mean = np.array([0.40789654, 0.44719302, 0.47026115],
                    dtype=np.float32).reshape(1, 1, 3)
     std  = np.array([0.28863828, 0.27408164, 0.27809835],
@@ -80,7 +81,7 @@ class COPILOT(data.Dataset):
 
     def save_results(self, results, save_dir):
         print('-------------------------')
-        print(self.convert_eval_format(results))
+        # print(self.convert_eval_format(results))
         print('-------------------------')
 
         json.dump(self.convert_eval_format(results), 
@@ -117,8 +118,8 @@ class COPILOT(data.Dataset):
             for cls_ind in all_bboxes[image_id]:
                 category_id = self._valid_ids[cls_ind - 1]
                 for bbox in all_bboxes[image_id][cls_ind]:
-                    bbox[2] -= bbox[0]
-                    bbox[3] -= bbox[1]
+                    # bbox[2] = bbox[0]
+                    # bbox[3] = bbox[1]
                     score = bbox[4]
                     bbox_out  = list(map(self._to_float, bbox[0:4]))
 

@@ -69,6 +69,8 @@ class PolydetDataset(data.Dataset):
       instance_path = img_path.replace('images', 'mask')
     elif 'cityscapes' in img_path:
       instance_path = img_path.replace('leftImg8bit', 'fg').replace('_fg', '_polygons')
+    else:
+      instance_path = img_path
     DRAW = False
     ann_ids = self.coco.getAnnIds(imgIds=[img_id])
     anns = self.coco.loadAnns(ids=ann_ids)
@@ -159,11 +161,11 @@ class PolydetDataset(data.Dataset):
       ann = anns[k]
       bbox = self._coco_box_to_bbox(ann['bbox'])
 
-      pseudo_depth[k] = ann['pseudo_depth']
+      pseudo_depth[k] = ann['category_id'] - 1 #TODO
       cls_id = int(self.cat_ids[ann['category_id']])
       cls_name = self.class_name[ann['category_id']]
 
-      points_on_border = ann['poly']
+      points_on_border = ann['segmentation'][0]
       if flipped:
         bbox[[0, 2]] = width - bbox[[2, 0]] - 1
         for i in range(0, len(points_on_border), 2):
@@ -237,7 +239,9 @@ class PolydetDataset(data.Dataset):
         ind[k] = ct_int[1] * output_w + ct_int[0]
         reg[k] = ct - ct_int
         reg_mask[k] = 1
-        freq_mask[k] = self.class_frequencies[cls_name]
+        # freq_mask[k] = self.class_frequencies[cls_name]
+        freq_mask[k] = 1 if cls_name == 'panel' else 2 #TODO
+
 
         if self.opt.dense_poly:
           # print('radius: ', radius)
