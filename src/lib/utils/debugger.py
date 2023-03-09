@@ -15,6 +15,7 @@ class Debugger(object):
       self.plt = plt
     self.imgs = {}
     self.theme = theme
+    print('--------num_classes-----------', num_classes)
     colors = [(color_list[_]).astype(np.uint8) \
             for _ in range(len(color_list))]
     self.colors = np.array(colors, dtype=np.uint8).reshape(len(colors), 1, 1, 3)
@@ -44,6 +45,8 @@ class Debugger(object):
         (255, 0, 0), (0, 0, 255)]
     elif num_classes == 80 or dataset == 'coco':
       self.names = coco_class_name
+    elif dataset == 'copilot':
+      self.names = copilot_class_name
     elif num_classes == 1 or ('uadetrac' in dataset and '_b' in dataset) or 'uav':
         self.names = uadetrac_b_class_name
     elif num_classes == 4 or 'uadetrac' in dataset or 'ua-detrac' in dataset:
@@ -218,12 +221,12 @@ class Debugger(object):
                    3, (int(c[0]), int(c[1]), int(c[2])), -1)
 
   def show_all_imgs(self, pause=False, time=0):
+    import os
     if not self.ipynb:
+      cont = 0
       for i, v in self.imgs.items():
-        cv2.imshow('{}'.format(i), v)
-      if cv2.waitKey(0 if pause else 1) == 27:
-        import sys
-        sys.exit(0)
+        a=0
+        # cv2.imshow('{}'.format(i), v)
     else:
       self.ax = None
       nImgs = len(self.imgs)
@@ -280,6 +283,7 @@ class Debugger(object):
   def add_ct_detection(
     self, img, dets, show_box=False, show_txt=True, 
     center_thresh=0.5, img_id='det'):
+    print('add_ct_detection')
     # dets: max_preds x 5
     self.imgs[img_id] = img.copy()
     if type(dets) == type({}):
@@ -444,6 +448,8 @@ gta_class_name = [
 pascal_class_name = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", 
   "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", 
   "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+
+copilot_class_name = ['panel', 'cropped_panel']
 
 coco_class_name = [
      'person', 'bicycle', 'car', 'motorcycle', 'airplane',

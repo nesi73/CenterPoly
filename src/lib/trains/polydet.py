@@ -135,15 +135,21 @@ class PolydetTrainer(BaseTrainer):
         return loss_states, loss
 
     def debug(self, batch, output, iter_id):
+        print('PolydetTrainer')
+        print('batch[]', batch['meta']['gt_det'])
         opt = self.opt
         reg = output['reg'] if opt.reg_offset else None
         dets = polydet_decode(
-            output['hm'], output['wh'], reg=reg,
-            cat_spec_poly=opt.cat_spec_poly, K=opt.K)
+            output['hm'], output['poly'], output['pseudo_depth'], reg=reg,
+            cat_spec_poly=self.opt.cat_spec_poly, K=self.opt.K)
+        print('dets.shape', dets.shape)
         dets = dets.detach().cpu().numpy().reshape(1, -1, dets.shape[2])
+        print('dets.shape', dets.shape)
+        print('batch[]', batch['meta']['gt_det'])
+        print('batch.shape', batch['meta']['gt_det'].shape)
         dets[:, :, :4] *= opt.down_ratio
         dets_gt = batch['meta']['gt_det'].numpy().reshape(1, -1, dets.shape[2])
-        dets_gt[:, :, :4] *= opt.down_ratio
+        # dets_gt[:, :, :4] *= opt.down_ratio
         for i in range(1):
             debugger = Debugger(
                 dataset=opt.dataset, ipynb=(opt.debug == 3), theme=opt.debugger_theme)
@@ -169,6 +175,7 @@ class PolydetTrainer(BaseTrainer):
             if opt.debug == 4:
                 debugger.save_all_imgs(opt.debug_dir, prefix='{}'.format(iter_id))
             else:
+                print('h')
                 debugger.show_all_imgs(pause=True)
 
     def save_result(self, output, batch, results):

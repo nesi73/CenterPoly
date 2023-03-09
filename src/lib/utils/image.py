@@ -157,7 +157,6 @@ def gaussian_ellipse_2d(shape, sigma=1):
 
 
 def draw_ellipse_gaussian(heatmap, center, radius_x, radius_y, k=1):
-
     x, y = int(center[0]), int(center[1])
     height, width = heatmap.shape[0:2]
     left, right = min(x, radius_x), min(width - x, radius_x + 1)

@@ -30,41 +30,11 @@ import pycocotools.coco as coco
 class COPILOT(data.Dataset):
     num_classes = 2
     OUTPUT_PATH = './src/lib/datasets/dataset'
-    default_resolution = [512, 512]
-
-    mean = np.array([0.40789654, 0.44719302, 0.47026115],
+    default_resolution = [512, 768] # 512, 684  
+    mean = np.array([0, 0, 0],
                    dtype=np.float32).reshape(1, 1, 3)
-    std  = np.array([0.28863828, 0.27408164, 0.27809835],
-                    dtype=np.float32).reshape(1, 1, 3)
-
-    def order_four_points(four_points):
-        """
-        With the four corners of the panel given, we select the two leftmost with respect to the x coordinates and from these 
-        we select the one that is higher, making this reference to point zero. For the other points, the same logic is followed.
-        @four_points: corners of the panel
-        Organization of the corners:
-            p0---------p1
-            |          |
-            |          |
-            p2---------p3
-        """
-
-        four_points=[[point[0][0], point[0][1]] for point in four_points]
-        four_points=np.array(four_points)
-        sort_x_left = four_points[four_points[:, 0].argsort()][:2]
-        sort_x_right = four_points[four_points[:, 0].argsort()][2:]
-        sort_y_left = sort_x_left[sort_x_left[:, 1].argsort()]
-        sort_y_right = sort_x_right[sort_x_right[:, 1].argsort()]
-
-        points = [sort_y_left[0][0], sort_y_left[0][1]], [sort_y_right[0][0] , sort_y_right[0][1] ], [sort_y_left[1][0], sort_y_left[1][1] ], [sort_y_right[1][0], sort_y_right[1][1]]
-
-        final_pts=[]
-        for pt in points:
-            for i, fp in enumerate(four_points):
-                if pt[0] == fp[0] and pt[1] == fp[1]:
-                    final_pts.append(four_points[i].tolist())
-        
-        return final_pts
+    std  = np.array([1, 1, 1],
+                   dtype=np.float32).reshape(1, 1, 3)
 
     def run_eval(self, results, save_dir):
         # result_json = os.path.join(save_dir, "results.json")
@@ -83,6 +53,8 @@ class COPILOT(data.Dataset):
         print('-------------------------')
         # print(self.convert_eval_format(results))
         print('-------------------------')
+
+        print(save_dir)
 
         json.dump(self.convert_eval_format(results), 
             open('{}/results.json'.format(save_dir), 'w'))
@@ -137,7 +109,10 @@ class COPILOT(data.Dataset):
     
     def __len__(self):
         return self.num_samples
-
+    
+    def _to_float(self, x):
+        return float("{:.2f}".format(x))
+    
     def __init__(self, opt, split):
         super(COPILOT, self).__init__()
 
@@ -149,20 +124,15 @@ class COPILOT(data.Dataset):
             self.data_dir, 'annotations', 
             'image_info_test-dev2017.json').format(split)
         else:
-            if opt.task == 'exdet':
+            if split == 'val':
                 self.annot_path = os.path.join(
-                self.data_dir, 'annotations', 
-                'instances_extreme_{}2017.json').format(split)
+                self.data_dir, 'annotations',
+                'instances_{}2017.json').format(split)
+                # 'instances_{}2017_1_on_10.json').format(split)
             else:
-                if split == 'val':
-                    self.annot_path = os.path.join(
-                    self.data_dir, 'annotations',
-                    'instances_{}2017.json').format(split)
-                    # 'instances_{}2017_1_on_10.json').format(split)
-                else:
-                    self.annot_path = os.path.join(
-                    self.data_dir, 'annotations',
-                    'instances_{}2017.json').format(split)
+                self.annot_path = os.path.join(
+                self.data_dir, 'annotations',
+                'instances_{}2017.json').format(split)
 
         self._valid_ids = [1, 2]
         self.cat_ids = {cat: i + 1 for i, cat in enumerate(self._valid_ids)} #TODO: add i + 1
@@ -172,7 +142,7 @@ class COPILOT(data.Dataset):
             cat_info.append({'name': cat, 'id': i + 1})
         ret = {'images': [], 'annotations': [], "categories": cat_info}
 
-        self.max_objs = 2
+        self.max_objs = 20000
         self.class_name = ['panel', 'cropped_panel']
 
         self.voc_color = [(v // 32 * 64 + 64, (v // 8) % 4 * 64, v % 8 * 32) \

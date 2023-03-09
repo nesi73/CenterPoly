@@ -92,7 +92,7 @@ class opts(object):
                              help='batch size on the master gpu.')
     self.parser.add_argument('--num_iters', type=int, default=-1,
                              help='default: #samples / batch_size.')
-    self.parser.add_argument('--val_intervals', type=int, default=5,
+    self.parser.add_argument('--val_intervals', type=int, default=2,
                              help='number of epochs to run validation.')
     self.parser.add_argument('--trainval', action='store_true',
                              help='include validation in training and '
@@ -120,16 +120,16 @@ class opts(object):
     self.parser.add_argument('--not_rand_crop', action='store_true',
                              help='not use the random crop data augmentation'
                                   'from CornerNet.')
-    self.parser.add_argument('--shift', type=float, default=0.1,
+    self.parser.add_argument('--shift', type=float, default=0,
                              help='when not using random crop'
                                   'apply shift augmentation.')
-    self.parser.add_argument('--scale', type=float, default=0.4,
+    self.parser.add_argument('--scale', type=float, default=0,
                              help='when not using random crop'
                                   'apply scale augmentation.')
     self.parser.add_argument('--rotate', type=float, default=0,
                              help='when not using random crop'
                                   'apply rotation augmentation.')
-    self.parser.add_argument('--flip', type = float, default=0.5,
+    self.parser.add_argument('--flip', type = float, default=0,
                              help='probability of applying flip augmentation.')
     self.parser.add_argument('--no_color_aug', action='store_true',
                              help='not use the color augmenation '
@@ -252,6 +252,9 @@ class opts(object):
                              help='use ground truth depth.')
 
   def parse(self, args=''):
+    # args=["polydet","--val_intervals", "2", "--exp_id", "prueba2", "--elliptical_gt", "--poly_weight", "1",
+    #       "--nbr_points", "16", "--dataset", "copilot", "--arch", "hourglass",  "--batch_size", "1", 
+    #       "--lr", "2e-4" , "--gpus", "1"]
     if args == '':
       opt = self.parser.parse_args()
     else:
@@ -369,7 +372,7 @@ class opts(object):
                    'poly': opt.nbr_points*2 if not opt.cat_spec_poly else opt.nbr_points*2 * opt.num_classes,
                    'pseudo_depth': 1,
                    # 'fg': 1,
-                   # 'wh': 2 ,
+                   'wh': 2 ,
                    #'border_hm': 1,
                    }
       if opt.reg_offset:
@@ -404,7 +407,7 @@ class opts(object):
 
   def init(self, args=''):
     default_dataset_info = {
-         'ctdet': {'default_resolution': [512, 512], 'num_classes': 4,
+         'ctdet': {'default_resolution': [383, 512], 'num_classes': 2,
                    'mean': [0.408, 0.447, 0.470], 'std': [0.289, 0.274, 0.278],
                    'dataset': 'uadetrac1on10'},
         'polydet': {'default_resolution': [512, 1024], 'num_classes': 11,

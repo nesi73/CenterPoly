@@ -59,6 +59,7 @@ def prefetch_test(opt):
     split = 'val' if not opt.trainval else 'test'
   else:
     split = 'test'
+
   dataset = Dataset(opt, split)
   detector = Detector(opt)
   
@@ -74,8 +75,7 @@ def prefetch_test(opt):
     print(id)
   for ind, (img_id, pre_processed_images) in enumerate(data_loader):
     ret = detector.run(pre_processed_images)
-    print('img_id', img_id)
-    # print(results)
+    
     results[img_id[0]] = ret['results']
     Bar.suffix = '[{0}/{1}]|Tot: {total:} |ETA: {eta:} '.format(
                    ind, num_iters, total=bar.elapsed_td, eta=bar.eta_td)
@@ -85,11 +85,7 @@ def prefetch_test(opt):
         t, tm = avg_time_stats[t])
     # bar.next()
   bar.finish()
-  for result in results:
-    print(result)
   dataset.run_eval(results, opt.save_dir)
-  print('num_iters', num_iters)
-  print('data_loader', data_loader)
 
 
 def test(opt):
@@ -102,6 +98,7 @@ def test(opt):
   Logger(opt)
   Detector = detector_factory[opt.task]
   split = 'val' if not opt.trainval else 'test'
+  split = 'test'
   dataset = Dataset(opt, split)
   detector = Detector(opt)
 
@@ -129,6 +126,7 @@ def test(opt):
       Bar.suffix = Bar.suffix + '|{} {:.3f} '.format(t, avg_time_stats[t].avg)
     bar.next()
   bar.finish()
+  print('here')
   dataset.run_eval(results, opt.save_dir)
   print('test')
 

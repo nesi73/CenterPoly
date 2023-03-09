@@ -610,8 +610,6 @@ def polydet_decode(heat, polys, depth, reg=None, cat_spec_poly=False, K=100):
     detections = torch.cat([bboxes, scores, clses, polys, depth], dim=2)
 
     return detections
-
-
 def multi_pose_decode(
     heat, wh, kps, reg=None, hm_hp=None, hp_offset=None, K=100):
   batch, cat, height, width = heat.size()

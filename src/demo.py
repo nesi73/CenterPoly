@@ -19,7 +19,7 @@ def demo(opt):
   opt.debug = max(opt.debug, 1)
   Detector = detector_factory[opt.task]
   detector = Detector(opt)
-
+  print('-----------opt.demo--------------',opt.demo)
   if opt.demo == 'webcam' or \
     opt.demo[opt.demo.rfind('.') + 1:].lower() in video_ext:
     cam = cv2.VideoCapture(0 if opt.demo == 'webcam' else opt.demo)
@@ -38,6 +38,7 @@ def demo(opt):
     if os.path.isdir(opt.demo):
       image_names = []
       ls = os.listdir(opt.demo)
+      print(ls)
       for file_name in sorted(ls):
           ext = file_name[file_name.rfind('.') + 1:].lower()
           if ext in image_ext:

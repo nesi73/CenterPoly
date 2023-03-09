@@ -153,7 +153,7 @@ class RegL1Loss(nn.Module):
 class RegL1PolyLoss(nn.Module):
     def __init__(self):
         super(RegL1PolyLoss, self).__init__()
-
+        
     def forward(self, output, mask, ind, target, freq_mask):
         pred = _transpose_and_gather_feat(output, ind)
         mask = mask.unsqueeze(2).expand_as(pred).float()
