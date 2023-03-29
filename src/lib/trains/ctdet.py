@@ -99,6 +99,7 @@ class CtdetTrainer(BaseTrainer):
         return loss_states, loss
 
     def debug(self, batch, output, iter_id):
+        print('DEBUG')
         opt = self.opt
         reg = output['reg'] if opt.reg_offset else None
         dets = ctdet_decode(
@@ -130,9 +131,12 @@ class CtdetTrainer(BaseTrainer):
                     debugger.add_coco_bbox(dets_gt[i, k, :4], dets_gt[i, k, -1],
                                            dets_gt[i, k, 4], img_id='out_gt')
 
+            print('-------------opt.debug------------',opt.debug)
             if opt.debug == 4:
+                print(opt.debug_dir, iter_id)
                 debugger.save_all_imgs(opt.debug_dir, prefix='{}'.format(iter_id))
             else:
+                print('-------------opt.debug------------',opt.debug)
                 debugger.show_all_imgs(pause=True)
 
     def save_result(self, output, batch, results):

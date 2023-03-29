@@ -34,7 +34,7 @@ class opts(object):
                                   'in the exp dir if load_model is empty.')
 
     # system
-    self.parser.add_argument('--gpus', default='0',
+    self.parser.add_argument('--gpus', default='1',
                              help='-1 for CPU, use comma for multiple gpus')
     self.parser.add_argument('--num_workers', type=int, default=4,
                              help='dataloader threads. 0 for single-thread.')
@@ -92,7 +92,7 @@ class opts(object):
                              help='batch size on the master gpu.')
     self.parser.add_argument('--num_iters', type=int, default=-1,
                              help='default: #samples / batch_size.')
-    self.parser.add_argument('--val_intervals', type=int, default=2,
+    self.parser.add_argument('--val_intervals', type=int, default=15,
                              help='number of epochs to run validation.')
     self.parser.add_argument('--trainval', action='store_true',
                              help='include validation in training and '
@@ -105,7 +105,7 @@ class opts(object):
                              help='multi scale test augmentation.')
     self.parser.add_argument('--nms', action='store_true',
                              help='run nms in testing.')
-    self.parser.add_argument('--K', type=int, default=128,
+    self.parser.add_argument('--K', type=int, default=500,
                              help='max number of output objects.')
     self.parser.add_argument('--not_prefetch_test', action='store_true',
                              help='not use parallal data pre-processing.')
@@ -259,6 +259,8 @@ class opts(object):
       opt = self.parser.parse_args()
     else:
       opt = self.parser.parse_args(args)
+
+    print('----------num_epochs----------: ', opt.num_epochs)
 
     opt.gpus_str = opt.gpus
     opt.gpus = [int(gpu) for gpu in opt.gpus.split(',')]

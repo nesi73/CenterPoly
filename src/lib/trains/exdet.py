@@ -51,6 +51,7 @@ class ExdetTrainer(BaseTrainer):
     return loss_states, loss
 
   def debug(self, batch, output, iter_id):
+    print('ExdetTrainer')
     opt = self.opt
     detections = self.decode(output['hm_t'], output['hm_l'], 
                              output['hm_b'], output['hm_r'], 
@@ -83,4 +84,5 @@ class ExdetTrainer(BaseTrainer):
       if opt.debug == 4:
         debugger.save_all_imgs(opt.debug_dir, prefix='{}'.format(iter_id))
       else:
+        print('h2')
         debugger.show_all_imgs(pause=True)

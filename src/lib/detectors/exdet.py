@@ -55,6 +55,7 @@ class ExdetDetector(BaseDetector):
       return output, dets
 
   def debug(self, debugger, images, dets, output, scale=1):
+    print('ExdetDetector')
     detection = dets.detach().cpu().numpy().copy()
     detection[:, :, :4] *= self.opt.down_ratio
     for i in range(1):

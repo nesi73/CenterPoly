@@ -95,6 +95,7 @@ class MultiPoseTrainer(BaseTrainer):
     return loss_states, loss
 
   def debug(self, batch, output, iter_id):
+    print('MultiPoseTrainer')
     opt = self.opt
     reg = output['reg'] if opt.reg_offset else None
     hm_hp = output['hm_hp'] if opt.hm_hp else None

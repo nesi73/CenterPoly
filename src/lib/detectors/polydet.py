@@ -24,8 +24,11 @@ class PolydetDetector(BaseDetector):
   
   def process(self, images, return_time=False):
     with torch.no_grad():
+      torch.cuda.synchronize()
+      tick = time.time()
       output = self.model(images)[-1]
       hm = output['hm'].sigmoid_()
+
       # fg = output['fg'].sigmoid_()
       # border_hm = output['border_hm'].sigmoid_()
       polys = output['poly']
@@ -35,8 +38,11 @@ class PolydetDetector(BaseDetector):
         hm = (hm[0:1] + flip_tensor(hm[1:2])) / 2
         reg = reg[0:1] if reg is not None else None
       torch.cuda.synchronize()
+      
       forward_time = time.time()
       dets = polydet_decode(hm, polys, pseudo_depth, reg=reg, cat_spec_poly=self.opt.cat_spec_poly, K=self.opt.K)
+
+      print(time.time() - tick)
     if return_time:
       return output, dets, forward_time
     else:
@@ -51,7 +57,7 @@ class PolydetDetector(BaseDetector):
     # trans_input = get_affine_transform(meta['c'], meta['s'], 0, [meta['out_width'], meta['out_height']])
     # fg = cv2.warpAffine(fg, trans_input, (meta['out_width'], meta['out_height']), flags=cv2.INTER_LINEAR)
 
-    length = 38  # len(dets[0][1][0])
+    length = 38  # len(dets[0][1][0]) #TODO: length 38?
     for j in range(1, self.num_classes + 1):
       dets[0][j] = np.array(dets[0][j], dtype=np.float32).reshape(-1, length)
       dets[0][j][:, :4] /= scale
@@ -76,6 +82,7 @@ class PolydetDetector(BaseDetector):
     return results
 
   def debug(self, debugger, images, dets, output, scale=1):
+    print('PolydetDetector')
     detection = dets.detach().cpu().numpy().copy()
     detection[:, :, :4] *= self.opt.down_ratio
     for i in range(1):
