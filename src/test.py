@@ -57,6 +57,8 @@ def prefetch_test(opt):
     split = 'val' if not opt.trainval else 'test'
   else:
     split = 'test'
+
+  print('--------------split---------------: ', split)
   dataset = Dataset(opt, split)
   detector = Detector(opt)
   
@@ -90,6 +92,7 @@ def test(opt):
   print('TASK: ', opt.task)
   Logger(opt)
   Detector = detector_factory[opt.task]
+  print('opt.trainval: ', opt.trainval)
   split = 'val' if not opt.trainval else 'test'
   
   dataset = Dataset(opt, split)
